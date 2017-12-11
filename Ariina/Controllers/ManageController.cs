@@ -7,12 +7,51 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Ariina.Models;
+using Ariina.Services;
 
 namespace Ariina.Controllers
 {
     [Authorize]
     public class ManageController : Controller
     {
+        public ActionResult Videos()
+        {
+            ApplicationDbContext db = new ApplicationDbContext();
+            var user = User.Identity.GetUserId();
+            var media = db.Media.Where(m => m.ApplicationUserId == user && !m.IsBeingConverted);
+            return View("../Media/Index", media.ToList());
+        }
+
+        public ActionResult Pending()
+        {
+            ApplicationDbContext db = new ApplicationDbContext();
+            var user = User.Identity.GetUserId();
+            var media = db.Media.Where(m => m.ApplicationUserId == user && !m.IsBeingConverted);
+
+            return View("../Media/Manage", media.ToList());
+        }
+
+        [Route("Manage/{id:int}")]
+        public ActionResult Display(int id)
+        {
+            ApplicationDbContext db = new ApplicationDbContext();
+            Media mediaFile = db.Media.Find(id);
+
+            if (mediaFile == null || mediaFile.IsBeingConverted)
+                return HttpNotFound();
+
+            var videoParams = ServerParams.VideoParams.GetVideoParams(mediaFile.VideoQuality);
+
+            ViewBag.MediaId = id;
+            ViewBag.Title = mediaFile.Title;
+            ViewBag.Description = mediaFile.Description;
+            ViewBag.IsHd = mediaFile.IsHd();
+            ViewBag.videoParams = videoParams;
+
+            return View("../Media/Display");
+        }
+
+        // To Do
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
 

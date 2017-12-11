@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Ariina.Models
 {
+
     public class ExternalLoginConfirmationViewModel
     {
         [Required]
